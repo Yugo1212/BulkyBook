@@ -1,4 +1,4 @@
-using BulkyBookApp.Data;
+using BulkyBookApp.DataAccess.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -63,7 +63,7 @@ namespace BulkyBookApp
             {
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{id?}");
+                    pattern: "{area=Customer}/{controller=Home}/{action=Index}/{id?}");
                 endpoints.MapRazorPages();
             });
         }
