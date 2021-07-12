@@ -198,3 +198,8 @@ body {
     width: 210px !important;
     margin: 0 auto;
 }
+
+input[type=checkbox] {
+    -webkit-appearance: checkbox;
+    appearance
+}
