@@ -1,13 +1,17 @@
 ﻿using BulkyBookApp.DataAccess.Repository.IRepository;
 using BulkyBookApp.Models;
+using BulkyBookApp.Utility;
 using BulkyBookApp.Models.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace BulkyBookApp.Areas.Customer.Controllers
 {
@@ -25,9 +29,75 @@ namespace BulkyBookApp.Areas.Customer.Controllers
 
         public IActionResult Index()
         {
-            IEnumerable<Product> productList = _unitOfWork.Product.GetAll(includeProperties:"Category,CoverType");
+            IEnumerable<Product> productList = _unitOfWork.Product.GetAll(includeProperties: "Category,CoverType");
+            var claimsIdentity = (ClaimsIdentity)User.Identity;
+
+            var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
+            if(claim != null)
+            {
+                var count = _unitOfWork.ShoppingCart.GetAll(c => c.ApplicationUserId == claim.Value).ToList().Count();
+
+                HttpContext.Session.SetInt32(SD.ssShopingCart, count);
+
+            }
             return View(productList);
         }
+
+        public IActionResult Details(int id)
+        {
+            var productFromDb = _unitOfWork.Product.GetFirstOrDefault(d => d.Id == id, includeProperties: "Category,CoverType");
+            ShoppingCart cartObj = new ShoppingCart()
+            {
+                Product = productFromDb,
+                ProductId = productFromDb.Id
+            };
+            return View(cartObj);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize]
+        public IActionResult Details(ShoppingCart cartObj)
+        {
+            cartObj.Id = 0;
+            if (ModelState.IsValid)
+            {
+                var claimsIdentity = (ClaimsIdentity)User.Identity;
+
+                var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
+
+                cartObj.ApplicationUserId = claim.Value;
+
+                ShoppingCart cartFromDb = _unitOfWork.ShoppingCart.GetFirstOrDefault(u => u.ApplicationUserId == cartObj.ApplicationUserId && u.ProductId == cartObj.ProductId, includeProperties: "Product");
+
+                if(cartFromDb == null)
+                {
+                    _unitOfWork.ShoppingCart.Add(cartObj);
+                }
+                else
+                {
+                    cartFromDb.Count += cartObj.Count;
+                    _unitOfWork.ShoppingCart.Update(cartFromDb);
+                }
+                _unitOfWork.Save();
+
+                var count = _unitOfWork.ShoppingCart.GetAll(c => c.ApplicationUserId == cartObj.ApplicationUserId).ToList().Count();
+
+                HttpContext.Session.SetObject(SD.ssShopingCart, count);
+
+                return RedirectToAction(nameof(Index));
+            }
+            else
+            {
+                var productFromDb = _unitOfWork.Product.GetFirstOrDefault(d => d.Id == cartObj.ProductId, includeProperties: "Category,CoverType");
+                ShoppingCart cartObject = new ShoppingCart()
+                {
+                    Product = productFromDb,
+                    ProductId = productFromDb.Id
+                };
+                return View(cartObject);
+            }
+        }
+
 
         public IActionResult Privacy()
         {
