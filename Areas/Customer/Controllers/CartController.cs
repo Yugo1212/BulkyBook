@@ -206,8 +206,6 @@ namespace BulkyBookApp.Areas.Customer.Controllers
             _unitOfWork.OrderHeader.Add(ShoppingCartVM.OrderHeader);
             _unitOfWork.Save();
 
-            List<OrderDetails> orderDetailsList = new List<OrderDetails>();
-
             foreach(var item in ShoppingCartVM.ListCart)
             {
                 item.Price = SD.GetPriceBasedOnQuantity(item.Count, item.Product.Price, item.Product.Price50, item.Product.Price100);
@@ -237,24 +235,24 @@ namespace BulkyBookApp.Areas.Customer.Controllers
             {
                 var options = new ChargeCreateOptions
                 {
-                    Amount = Convert.ToInt32(ShoppingCartVM.OrderHeader.OrderTotal*100),
+                    Amount = Convert.ToInt32(ShoppingCartVM.OrderHeader.OrderTotal * 100),
                     Currency = "usd",
-                    Description = "Order ID: " + ShoppingCartVM.OrderHeader.Id,
+                    Description = "Order ID : " + ShoppingCartVM.OrderHeader.Id,
                     Source = stripeToken
                 };
 
                 var service = new ChargeService();
                 Charge charge = service.Create(options);
 
-                if(charge.BalanceTransactionId == null)
+                if (charge.Id == null)
                 {
                     ShoppingCartVM.OrderHeader.PaymentStatus = SD.PaymentStatusRejected;
                 }
                 else
                 {
-                    ShoppingCartVM.OrderHeader.TransactionId = charge.BalanceTransactionId;
+                    ShoppingCartVM.OrderHeader.TransactionId = charge.Id;
                 }
-                if(charge.Status.ToLower() == "succeeded")
+                if (charge.Status.ToLower() == "succeeded")
                 {
                     ShoppingCartVM.OrderHeader.PaymentStatus = SD.PaymentStatusApproved;
                     ShoppingCartVM.OrderHeader.OrderStatus = SD.StatusApproved;
