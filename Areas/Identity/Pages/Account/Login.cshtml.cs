@@ -99,6 +99,7 @@ namespace BulkyBookApp.Areas.Identity.Pages.Account
                     _logger.LogInformation("User logged in.");
                     return LocalRedirect(returnUrl);
                 }
+                ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
                 if (result.RequiresTwoFactor)
                 {
                     return RedirectToPage("./LoginWith2fa", new { ReturnUrl = returnUrl, RememberMe = Input.RememberMe });
@@ -116,6 +117,7 @@ namespace BulkyBookApp.Areas.Identity.Pages.Account
             }
 
             // If we got this far, something failed, redisplay form
+            ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             return Page();
         }
     }
