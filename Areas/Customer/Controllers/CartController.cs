@@ -286,7 +286,6 @@ namespace BulkyBookApp.Areas.Customer.Controllers
             }
             catch(Exception ex)
             {
-
             }
             return View(id);
         }

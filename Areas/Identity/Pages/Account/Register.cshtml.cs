@@ -103,6 +103,15 @@ namespace BulkyBookApp.Areas.Identity.Pages.Account
 
             };
 
+            if (User.IsInRole(SD.Role_User_Employee))
+            {
+                Input.RoleList = _roleManager.Roles.Where(u => u.Name == SD.Role_User_Company).Select(x => x.Name).Select(i => new SelectListItem
+                {
+                    Text = i,
+                    Value = i
+                });
+            }
+
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
         }
 
@@ -121,7 +130,7 @@ namespace BulkyBookApp.Areas.Identity.Pages.Account
                     City = Input.City,
                     State = Input.State,
                     PostalCode = Input.PostalCode,
-                    PhoneNumber = Input.PhoneNumber,
+                    PhoneNumber = "+48" + Input.PhoneNumber,
                     Name = Input.Name,
                     Role = Input.Role
                 };
