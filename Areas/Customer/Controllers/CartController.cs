@@ -191,6 +191,7 @@ namespace BulkyBookApp.Areas.Customer.Controllers
             return View(ShoppingCartVM);
         }
 
+
         [HttpPost]
         [ActionName("Summary")]
         [ValidateAntiForgeryToken]

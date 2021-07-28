@@ -131,6 +131,31 @@ namespace BulkyBookApp.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Update()
+        {
+            var orderHeader = _unitOfWork.OrderHeader.GetFirstOrDefault(u => u.Id == OrderVM.OrderHeader.Id);
+
+            orderHeader.Name = OrderVM.OrderHeader.Name;
+            orderHeader.StreetAdress = OrderVM.OrderHeader.StreetAdress;
+            orderHeader.City = OrderVM.OrderHeader.City;
+            orderHeader.State = OrderVM.OrderHeader.State;
+            orderHeader.PostalCode = OrderVM.OrderHeader.PostalCode;
+            orderHeader.PhoneNumber = OrderVM.OrderHeader.PhoneNumber;
+
+            if(OrderVM.OrderHeader.Carrier != null && OrderVM.OrderHeader.TrackingNumber != null)
+            {
+                orderHeader.Carrier = OrderVM.OrderHeader.Carrier;
+                orderHeader.TrackingNumber = OrderVM.OrderHeader.TrackingNumber;
+            }
+
+            _unitOfWork.Save();
+
+            return RedirectToAction(nameof(Index));
+        }
+
+
         #region API CALLS
         [HttpGet]
         public IActionResult GetOrderList(string status)
